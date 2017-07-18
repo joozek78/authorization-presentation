@@ -1,0 +1,459 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+		<style>
+			body {
+				--theme-basis: #444144;
+				/*--theme-lighter: #625E62;*/
+				--theme-lighter: #3f3f3f;
+				--theme-light: #827D82;
+				--theme-darker: #211F21;
+				--theme-dark: #100C10
+				background: --var(theme-basis);
+				--header-color: #FBC68B;
+				--text-color: white;
+				--subheader-color: white;
+				--header-font: Consolas;
+				--text-font: "Helvetica Light";
+				--subheader-font: "Helvetica";
+			}
+			.title-subheader {
+				color: var(--text-color);
+				font-family: Helvetica;
+			}
+			.reveal h1 {
+				color: var(--header-color);
+				font-family: var(--header-font);
+				text-transform: none;
+				font-weight: normal;
+			}
+			.reveal h2 {
+				color: var(--subheader-color);
+				font-family: var(--subheader-font);
+				text-transform: none;
+				font-size: 1.2em;
+			}
+
+			div.box {
+				background: var(--theme-lighter);
+				padding: 10px;
+			}
+
+			div.quote {
+				font-style: italic;
+			    font-family: "Helvetica Light";
+			}
+
+			div.quote__main {
+				color: lightgray;
+			}
+
+			span.quote__em,
+			div.quote__em {
+				font-weight: bolder;
+				color: var(--text-color);
+			}
+			div.quote__source {
+				text-align: right;
+				font-size: smaller;
+			}
+
+			div.good-bad-list {
+				display: flex;
+				flex-direction: row;
+			}
+
+			ul.good-bad-list__good,
+			ul.good-bad-list__bad {
+				flex: 1 0 50%;
+				list-style-type: none;
+			}
+
+			ul.good-bad-list__good li:before {
+				content: '✔';
+				color: green;
+				font-weight: bolder;
+			    margin-right: 4px;
+			}
+
+			ul.good-bad-list__bad li:before {
+				content: '✖';
+				color: red;
+				font-weight: bolder;
+			    margin-right: 4px;
+			}
+
+			span.code-inline {
+				font-family: monospace;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2>
+						Authorization Library
+					</h2>
+					<h2>Marcin @joozek78 Goliński</h2>
+					<h2>July 2017</h2>
+				</section>
+				<section>
+					<h2>Prerequisites</h2>
+					<div class="box">
+						<ol>
+							<li>Basic understanding of Starcounter</li>
+						</ol>
+					</div>
+				</section>
+				<section>
+					<h2>Agenda</h2>
+					<div class="box">
+						<ol>
+							<li>What is and what is not Authorization Library</li>
+							<li>Principles and definitions</li>
+							<li>Add ons</li>
+							<li>Code example (outside those slides)</li>
+						</ol>
+					</div>
+				</section>
+				<section>
+					<h1>Principles</h1>
+				</section>
+				<section>
+					<h2>Authorization is not Authentication</h2>
+					<aside class="notes" data-markdown>
+						- definitions
+						- Authentication is provided by signin
+					</aside>
+				</section>
+				<section>
+					<h1>Permission</h1>
+					 <pre><code data-trim>
+						 public class CreatePerson: Permission
+						 {
+						 }
+					</code></pre>
+				</section>
+				<section>
+					<h1>Permission</h1>
+					 <div class="box quote">
+						 <div class="quote__main">The <span class="quote__em">action</span> of officially <span class="quote__em">allowing</span> someone to do a&nbsp;<span class="quote__em">particular&nbsp;thing</span></div>
+					 	<div class="quote__source">- Oxford Dictionary</div>
+					 </div>
+				</section>
+				<section>
+					<h1>Permission</h1>
+					 <div class="good-bad-list">
+						 <ul class="good-bad-list__good">
+							<li><span class="code-inline">CreatePerson</span></li>
+							<li><span class="code-inline">ChangePersonDetails(Person)</span></li>
+						 </ul>
+						 <ul class="good-bad-list__bad">
+							<li><span class="code-inline">AdminPermission</span> ("Admin" is not an action)</li>
+							<li><span class="code-inline">CreatePermission</span> (too broad)</li>
+						 </ul>
+					 </div>
+					 <aside class="notes" data-markdown>
+						 - "Admin Permission" describes a person, not an action
+						 - "Create Permission" doesn't say anything about the object
+					 </aside>
+				</section>
+				<section>
+					<h1>Permission</h1>
+					<div class="box">
+						<ul>
+							<li>Rule of thumb: <i>verb</i> + <i>noun</i></li>
+							<li>Suggestion: no "Permission" suffix</li>
+						</ul>
+					</div>
+				</section>
+				<section>
+					<h1>Permission</h1>
+					 <pre><code data-trim>
+						public class RemovePerson: Permission
+						{
+						    public Person Person { get; set; }
+
+						    public RemovePerson(Person person)
+						    {
+						        this.Person = person;
+						    }
+
+						    // Equality members are always a good idea
+						}
+					</code></pre>
+					<aside class="notes" data-markdown>
+						- Core doesn't care about the class insides, only type
+						- Some elements may care
+						- Stick to one constructor
+						- Parameters may be serializable things (string, int, etc.) or db classes
+						- It could be something different, but some features wouldn't work
+					</aside>
+				</section>
+				<section>
+					<h1>Claim</h1>
+					<div class="box quote">
+						<div class="quote__main quote__em">An assertion that something is true</div>
+					<div class="quote__source">- Oxford Dictionary</div>
+					</div>
+				</section>
+				<section>
+					<h1>Claim</h1>
+					 <pre><code data-trim>
+						public class PersonClaim: Claim
+						{
+						    public Person Person { get; set; }
+
+						    public PersonClaim(Person person)
+						    {
+						        this.Person = person;
+						    }
+
+						    // Equality members are always a good idea
+						}
+					</code></pre>
+				</section>
+				<section>
+					<h1>Rule</h1>
+					 <pre><code data-trim class="cs">
+var rules = new AuthorizationRules();
+
+rules.AddRule(new BloodlineRule&lt;CreatePerson>());
+// Person creator can remove a person
+rules.Add(new ClaimRule((PersonClaim claim, RemovePerson permission) =>
+                         claim.Person.Equals(permission.Person.CreatedBy)));
+					</code></pre>
+				</section>
+				<section>
+					<h1>Checking permissions</h1>
+					 <pre><code data-trim class="cs">
+var enforcer = new AuthorizationEnforcement(rules, authenticationBackend);
+bool canIDoIt = enforcer.CheckPermission(CreatePerson);
+					</code></pre>
+				</section>
+				<section>
+					<h1>Add ons</h1>
+					<aside class="notes">
+						Not a formal plugin; code that is built upon the core
+					</aside>
+				</section>
+				<section>
+					<h1>Router</h1>
+					<aside class="notes" data-markdown>
+						- not an Authorization thing
+						- simplifies your life in a different area
+						- required for the next thing I want to present
+					</aside>
+				</section>
+				<section>
+					<h2>Instead of this</h2>
+					 <pre><code data-trim class="cs">
+Handle.GET("/MyApp/Person/{?}", (string key) => {
+    var person = (Person)DbHelper.FromID(DbHelper.Base64DecodeObjectID(key));
+    return new PersonPage() {Data = person};
+})
+					</code></pre>
+				</section>
+				<section>
+					<h2>Do this</h2>
+					 <pre><code data-trim class="cs">
+router.HandleGet&lt;PersonPage>();
+					</code></pre>
+					 <pre><code data-trim class="cs">
+[Url("/MyApp/Person/{?}")]
+public class PersonPage
+{
+    // ...
+}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Router also governs:</h2>
+					<div class="box">
+					<ul>
+						<li>Common page creation and initialization</li>
+						<li>Middleware</li>
+					</ul>
+					</div>
+					<aside class="notes" data-markdown>
+						- I'll show how to use it in the code part
+					</aside>
+				</section>
+				<section>
+					<h1>SecurityMiddleware</h1>
+					<aside class="notes" data-markdown>
+						- not an Authorization thing
+						- simplifies your life in a different area
+						- required for the next thing I want to present
+					</aside>
+				</section>
+				<section>
+					<h1>This is tedious</h1>
+					 <pre><code data-trim class="cs">
+public void Handle(Input.CreatePersonTrigger)
+{
+	if(!enforcer.CheckPermission(new CreatePerson()))
+	{
+		return; // or maybe do something special?
+	}
+	// create person
+}
+
+public void Handle(Input.RemovePersonTrigger)
+{
+	if(!enforcer.CheckPermission(new RemovePerson(this.Data)))
+	{
+		return; // or maybe do something special?
+	}
+	// remove person
+}
+					</code></pre>
+				</section>
+				<section>
+					<h1>This is simple</h1>
+					 <pre><code data-trim class="cs">
+[RequirePermission(typeof(CreatePerson))]
+public void Handle(Input.CreatePersonTrigger)
+{
+	// create person
+}
+
+[RequirePermission(typeof(RemovePerson))]
+public void Handle(Input.RemovePersonTrigger)
+{
+	// remove person
+}
+					</code></pre>
+					<aside class="notes" data-markdown>
+						- note that SecurityMiddleware knows it has to use this.Data
+						- We can configure what happens if permission is denied
+						- we can also use the attribute on the class itself
+					</aside>
+				</section>
+				<section>
+					<h1>Permission Selection Partial</h1>
+					<aside class="notes" data-markdown>
+						- manually assigning permissions
+						- storing them in the database
+						- auto-generate the UI controls
+					</aside>
+				</section>
+				<section>
+					<h1>PSP - Prerequisite</h1>
+					<pre><code data-trim>
+						public class RemovePerson: Permission
+						{
+						    public Person Person { get; set; }
+
+						    public RemovePerson(Person person)
+						    {
+						        this.Person = person;
+						    }
+
+						    // Equality members are always a good idea
+						}
+					</code></pre>
+					<aside class="notes" data-markdown>
+						- probably all the classes you write are okay
+						- it uses Newtonsoft.Json underneath
+						- you can use Database classes
+					</aside>
+				</section>
+				<section>
+					<h1>PSP - Prerequisite</h1>
+					<div class="box">
+						Use People app to create PersonGroups
+					</div>
+					<aside class="notes" data-markdown>
+						- you can create them with your own apps
+						- or programatically
+					</aside>
+				</section>
+				<section>
+					<h1>PSP - viewmodel</h1>
+	                <pre><code data-trim>
+public partial class AuthorizationSettingsPage : BaseViewModel
+{
+    public override void Init()
+    {
+        this.PermissionPartial =
+		    PermissionSelectionPartial.Create(new CreatePerson());
+    }
+}
+</code></pre>
+					<aside class="notes" data-markdown>
+						- it can be further customised
+						- the permission you pass will be serialized in DB and associated with some PersonGroups
+					</aside>
+				</section>
+				<section>
+					<h1>PSP - view</h1>
+	                <pre><code data-trim>
+<template>
+    <template is="dom-bind">
+        <starcounter-include partial="{{model.PermissionPartial}}"></starcounter-include>
+    </template>
+</template>
+</code></pre>
+					<aside class="notes" data-markdown>
+					</aside>
+				</section>
+				<section>
+					<h1>PSP - result</h1>
+					<video data-autoplay src="psp-demo.mp4"></video>
+				</section>
+				<section>
+					<h1>The code</h1>
+					<aside class="notes" data-markdown>
+						- original SweOffshore code
+						- it's not massaged for demo purposes
+						- CTRL+1 -- 4
+					</aside>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				width: 1080,
+				transition: 'none',
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+			// Reveal.addEventListener( 'ready', function( event ) {
+			// 	Reveal.slide(Reveal.getSlides().length);
+			// } );
+			
+		</script>
+	</body>
+</html>
